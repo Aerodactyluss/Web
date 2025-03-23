@@ -1,0 +1,65 @@
+document.addEventListener("DOMContentLoaded", loadPosts);
+
+function addPost() {
+    let postText = document.getElementById("postText").value;
+    let postFile = document.getElementById("postFile").files[0];
+    let postContainer = document.getElementById("postContainer");
+
+    if (!postText && !postFile) {
+        alert("Masukkan teks atau unggah file!");
+        return;
+    }
+
+    let reader = new FileReader();
+    let newPost = { text: postText, file: null, type: null };
+
+    if (postFile) {
+        reader.onload = function(event) {
+            newPost.file = event.target.result;
+            newPost.type = postFile.type.includes("image") ? "image" : "video";
+            savePost(newPost);
+            renderPost(newPost, postContainer);
+        };
+        reader.readAsDataURL(postFile);
+    } else {
+        savePost(newPost);
+        renderPost(newPost, postContainer);
+    }
+
+    document.getElementById("postText").value = "";
+    document.getElementById("postFile").value = "";
+}
+
+function renderPost(post, container) {
+    let postElement = document.createElement("div");
+    postElement.classList.add("card", "p-3", "mt-2");
+
+    if (post.text) {
+        postElement.innerHTML += `<p>${post.text}</p>`;
+    }
+
+    if (post.file) {
+        if (post.type === "image") {
+            postElement.innerHTML += `<img src="${post.file}" class="img-fluid">`;
+        } else if (post.type === "video") {
+            postElement.innerHTML += `<video controls class="w-100"><source src="${post.file}" type="video/mp4"></video>`;
+        }
+    }
+
+    container.prepend(postElement);
+}
+
+function savePost(post) {
+    let posts = JSON.parse(localStorage.getItem("posts")) || [];
+    posts.push(post);
+    localStorage.setItem("posts", JSON.stringify(posts));
+}
+
+function loadPosts() {
+    let postContainer = document.getElementById("postContainer");
+    let posts = JSON.parse(localStorage.getItem("posts")) || [];
+
+    posts.forEach(post => {
+        renderPost(post, postContainer);
+    });
+}
