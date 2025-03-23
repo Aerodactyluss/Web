@@ -11,17 +11,22 @@
 
 <div class="container mt-5">
     <h2 class="text-center">Forum Modern</h2>
+    
+    <button id="darkModeToggle" class="btn btn-secondary">🌙 Mode Gelap</button>
+    <button id="logoutBtn" class="btn btn-danger float-end">Logout</button>
 
     <div class="card p-3">
+        <input type="text" id="username" class="form-control mb-2" placeholder="Username (Login/Register)">
         <textarea id="postText" class="form-control mb-2" placeholder="Tulis sesuatu..."></textarea>
         <input type="file" id="postFile" class="form-control mb-2" accept="image/*,video/*">
         <button class="btn btn-primary" onclick="addPost()">Kirim</button>
     </div>
 
-    <div id="postContainer" class="mt-4"></div>
+    <h3 class="mt-4">Postingan Terbaru</h3>
+    <div id="postContainer"></div>
 </div>
 
+<script src="auth.js"></script>
 <script src="script.js"></script>
 </body>
-  </html>
-  
+</html>
