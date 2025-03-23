@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     loadPosts();
     document.getElementById("darkModeToggle").addEventListener("click", toggleDarkMode);
+    loadDraft();
 });
 
 function addPost() {
@@ -108,4 +109,9 @@ function addComment(index) {
 
 function toggleDarkMode() {
     document.body.classList.toggle("dark-mode");
+    localStorage.setItem("darkMode", document.body.classList.contains("dark-mode") ? "enabled" : "disabled");
+}
+
+if (localStorage.getItem("darkMode") === "enabled") {
+    document.body.classList.add("dark-mode");
 }
