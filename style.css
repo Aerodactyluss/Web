@@ -89,3 +89,19 @@ aside.active {
 }
 und: #f0f0f0;
 }
+#auth-container {
+    width: 300px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #292929;
+    border-radius: 5px;
+    text-align: center;
+}
+
+#auth-container input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: none;
+}
