@@ -1,61 +1,65 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forum Modern</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <div class="menu-icon" onclick="toggleSidebar()">☰</div>
-        <h1>Forum</h1>
-        <button id="logoutBtn" onclick="logout()">Logout</button>
+        <h1>Modern Forum</h1>
+        <nav>
+            <ul>
+                <li><a href="#" id="loginLink">Login</a></li>
+                <li><a href="#" id="registerLink">Register</a></li>
+                <li><a href="#" id="logoutLink" style="display:none;">Logout</a></li>
+                <li><a href="#" id="profileLink" style="display:none;">Profile</a></li>
+            </ul>
+        </nav>
     </header>
+    <main>
+        <section class="new-post">
+            <h2>Create a New Post</h2>
+            <form id="postForm">
+                <input type="text" id="postTitle" placeholder="Title" required>
+                <textarea id="postContent" placeholder="Write your post here..." required></textarea>
+                <input type="text" id="postTags" placeholder="Tags (comma separated)" required>
+                <button type="submit">Post</button>
+            </form>
+        </section>
+        <section class="posts">
+            <h2>Posts</h2>
+            <input type="text" id="searchInput" placeholder="Search posts...">
+            <div id="postsContainer"></div>
+        </section>
+    </main>
 
-    <div class="sidebar">
-        <p><b>Menu</b></p>
-        <p><a href="#" onclick="toggleSidebar()">Tutup</a></p>
-    </div>
-
-    <div id="loginContainer">
-        <h2>Login</h2>
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Login</button>
-    </div>
-
-    <div id="forumContainer" style="display: none;">
-        <h2>Buat Thread</h2>
-        <input type="text" id="threadTitle" placeholder="Judul Thread">
-        <textarea id="threadContent" placeholder="Isi thread"></textarea>
-        <button onclick="addThread()">Tambah</button>
-
-        <h2>Daftar Thread</h2>
-        <div id="threadList"></div>
-    </div>
-
-    <div id="modal" class="modal">
+    <!-- Authentication Modals -->
+    <div id="loginModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2 id="modalTitle"></h2>
-            <p id="modalContent"></p>
-            <button id="editThreadBtn" onclick="editThread()">Edit</button>
-            <button id="deleteThreadBtn" onclick="deleteThread()">Hapus</button>
-            <button id="warnUserBtn" onclick="warnUser()">Warning</button>
-            <button id="banUserBtn" onclick="banUser()">Ban</button>
-            <button id="viewLogsBtn" onclick="viewLogs()">Lihat Logs</button>
+            <span class="close" id="closeLogin">&times;</span>
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="text" id="loginUsername" placeholder="Username" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
         </div>
     </div>
 
-    <div id="logsModal" class="modal">
+    <div id="registerModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeLogsModal()">&times;</span>
-            <h2>Logs Thread</h2>
-            <ul id="logsList"></ul>
+            <span class="close" id="closeRegister">&times;</span>
+            <h2>Register</h2>
+            <form id="registerForm">
+                <input type="text" id="registerUsername" placeholder="Username" required>
+                <input type="password" id="registerPassword" placeholder="Password" required>
+                <button type="submit">Register</button>
+            </form>
         </div>
     </div>
 
     <script src="script.js"></script>
 </body>
-</html>
+                                </html>
