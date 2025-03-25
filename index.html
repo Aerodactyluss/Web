@@ -4,45 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forum Modern</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <header>
+        <div class="menu-icon" onclick="toggleSidebar()">☰</div>
+        <h1>Forum</h1>
+        <button id="logoutBtn" onclick="logout()">Logout</button>
+    </header>
 
-    <!-- Navbar -->
-    <nav id="navbar">
-        <div id="menu-btn">&#9776;</div>
-        <h1>Forum Modern</h1>
-        <button id="logout-btn" style="display:none;">Logout</button>
-        <button id="toggle-theme">🌙</button>
-    </nav>
-
-    <!-- Login & Register -->
-    <div id="auth-container">
-        <h2>Login atau Register</h2>
-        <input type="text" id="reg-username" placeholder="Username">
-        <input type="password" id="reg-password" placeholder="Password">
-        <button id="register-btn">Register</button>
-        <hr>
-        <input type="text" id="login-username" placeholder="Username">
-        <input type="password" id="login-password" placeholder="Password">
-        <button id="login-btn">Login</button>
+    <div class="sidebar">
+        <p><b>Menu</b></p>
+        <p><a href="#" onclick="toggleSidebar()">Tutup</a></p>
     </div>
 
-    <!-- Konten Forum -->
-    <div id="forum-container">
-        <main>
-            <section id="new-thread" style="display:none;">
-                <h2>Buat Thread Baru</h2>
-                <input type="text" id="thread-title" placeholder="Judul Thread">
-                <textarea id="thread-content" placeholder="Isi Thread"></textarea>
-                <button id="post-thread">Post</button>
-            </section>
+    <div id="loginContainer">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
 
-            <section id="threads">
-                <h2>Thread Terbaru</h2>
-                <div id="thread-list"></div>
-            </section>
-        </main>
+    <div id="forumContainer" style="display: none;">
+        <h2>Buat Thread</h2>
+        <input type="text" id="threadTitle" placeholder="Judul Thread">
+        <textarea id="threadContent" placeholder="Isi thread"></textarea>
+        <button onclick="addThread()">Tambah</button>
+
+        <h2>Daftar Thread</h2>
+        <div id="threadList"></div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <p id="modalContent"></p>
+            <button id="editThreadBtn" onclick="editThread()">Edit</button>
+            <button id="deleteThreadBtn" onclick="deleteThread()">Hapus</button>
+            <button id="warnUserBtn" onclick="warnUser()">Warning</button>
+            <button id="banUserBtn" onclick="banUser()">Ban</button>
+            <button id="viewLogsBtn" onclick="viewLogs()">Lihat Logs</button>
+        </div>
+    </div>
+
+    <div id="logsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeLogsModal()">&times;</span>
+            <h2>Logs Thread</h2>
+            <ul id="logsList"></ul>
+        </div>
     </div>
 
     <script src="script.js"></script>
