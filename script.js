@@ -1,130 +1,104 @@
-// Ambil Data User dari LocalStorage
-let users = JSON.parse(localStorage.getItem("users")) || {};
+const adminUser = "admin";
+const adminPass = "admin123";
+let currentUser = "";
 
-// Registrasi Akun (Satu Username Unik)
-document.getElementById("register-btn").addEventListener("click", function() {
-    const username = document.getElementById("reg-username").value.trim();
-    const password = document.getElementById("reg-password").value.trim();
-
-    if (!username || !password) {
-        alert("Username dan password tidak boleh kosong!");
-        return;
-    }
-
-    if (users[username]) {
-        alert("Username sudah digunakan, pilih username lain!");
-    } else {
-        users[username] = { password, role: "user" };
-        localStorage.setItem("users", JSON.stringify(users));
-        alert("Registrasi berhasil! Silakan login.");
-    }
-});
-
-// Login Akun
-document.getElementById("login-btn").addEventListener("click", function() {
-    const username = document.getElementById("login-username").value.trim();
-    const password = document.getElementById("login-password").value.trim();
-
-    if (users[username] && users[username].password === password) {
-        localStorage.setItem("user", JSON.stringify({ username, role: users[username].role }));
-        showForum();
-    } else {
-        alert("Login gagal! Periksa username & password.");
-    }
-});
-
-// Logout
-document.getElementById("logout-btn").addEventListener("click", function() {
-    localStorage.removeItem("user");
-    location.reload();
-});
-
-// Menampilkan Forum Setelah Login
-function showForum() {
-    document.getElementById("auth-container").style.display = "none";
-    document.getElementById("forum-container").style.display = "block";
-    document.getElementById("logout-btn").style.display = "block";
-
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user.role === "admin") {
-        alert("Anda masuk sebagai Admin!");
-    }
-
-    document.getElementById("new-thread").style.display = "block";
-    displayThreads();
+function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('active');
 }
 
-// Posting Thread
-document.getElementById("post-thread").addEventListener("click", function() {
-    const title = document.getElementById("thread-title").value.trim();
-    const content = document.getElementById("thread-content").value.trim();
+function login() {
+    let username = document.getElementById("username").value;
+    let password = document.getElementById("password").value;
 
-    if (!title || !content) {
-        alert("Judul dan isi thread tidak boleh kosong!");
-        return;
-    }
+    if (username && password) {
+        localStorage.setItem("currentUser", username);
+        currentUser = username;
 
-    const user = JSON.parse(localStorage.getItem("user"));
-    const thread = { title, content, author: user.username, date: new Date().toLocaleString(), pinned: false };
-    saveThread(thread);
-    displayThreads();
-});
-
-// Simpan Thread ke LocalStorage
-function saveThread(thread) {
-    let threads = JSON.parse(localStorage.getItem("threads")) || [];
-    threads.unshift(thread);
-    localStorage.setItem("threads", JSON.stringify(threads));
-}
-
-// Menampilkan Thread untuk Semua Pengguna
-function displayThreads() {
-    const threadList = document.getElementById("thread-list");
-    threadList.innerHTML = "";
-    const threads = JSON.parse(localStorage.getItem("threads")) || [];
-
-    threads.forEach((thread, index) => {
-        const threadDiv = document.createElement("div");
-        threadDiv.classList.add("thread");
-        if (thread.pinned) threadDiv.classList.add("pinned");
-
-        threadDiv.innerHTML = `
-            <h3>${thread.title}</h3>
-            <p>${thread.content}</p>
-            <small>Oleh: ${thread.author} | ${thread.date}</small>
-        `;
-
-        // Admin Actions
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (user && user.role === "admin") {
-            const adminActions = document.createElement("div");
-            adminActions.classList.add("admin-actions");
-            adminActions.innerHTML = `
-                <button onclick="deleteThread(${index})">Hapus</button>
-                <button onclick="pinThread(${index})">${thread.pinned ? "Unpin" : "Pin"}</button>
-            `;
-            threadDiv.appendChild(adminActions);
+        if (username === adminUser && password === adminPass) {
+            localStorage.setItem("isAdmin", true);
+        } else {
+            localStorage.removeItem("isAdmin");
         }
 
+        document.getElementById("loginContainer").style.display = "none";
+        document.getElementById("forumContainer").style.display = "block";
+        loadThreads();
+    } else {
+        alert("Masukkan username dan password!");
+    }
+}
+
+function logout() {
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("isAdmin");
+    location.reload();
+}
+
+function addThread() {
+    let title = document.getElementById("threadTitle").value;
+    let content = document.getElementById("threadContent").value;
+
+    if (title && content) {
+        let threads = JSON.parse(localStorage.getItem("threads")) || [];
+        threads.push({ title, content, author: currentUser, logs: [] });
+        localStorage.setItem("threads", JSON.stringify(threads));
+        loadThreads();
+    }
+}
+
+function loadThreads() {
+    let threads = JSON.parse(localStorage.getItem("threads")) || [];
+    let threadList = document.getElementById("threadList");
+    threadList.innerHTML = "";
+
+    threads.forEach((thread, index) => {
+        let threadDiv = document.createElement("div");
+        threadDiv.classList.add("thread");
+        threadDiv.innerHTML = `<b>${thread.title}</b> <br> <i>by ${thread.author}</i>`;
+        threadDiv.onclick = function() {
+            openModal(thread.title, thread.content, index, thread.author);
+        };
         threadList.appendChild(threadDiv);
     });
 }
 
-// Hapus Thread (Admin)
-function deleteThread(index) {
-    let threads = JSON.parse(localStorage.getItem("threads"));
-    threads.splice(index, 1);
-    localStorage.setItem("threads", JSON.stringify(threads));
-    displayThreads();
+function openModal(title, content, index, author) {
+    document.getElementById("modalTitle").innerText = title;
+    document.getElementById("modalContent").innerText = content;
+    document.getElementById("modal").style.display = "block";
+
+    document.getElementById("viewLogsBtn").setAttribute("data-index", index);
 }
 
-// Pin Thread (Admin)
-function pinThread(index) {
-    let threads = JSON.parse(localStorage.getItem("threads"));
-    threads[index].pinned = !threads[index].pinned;
-    localStorage.setItem("threads", JSON.stringify(threads));
-    displayThreads();
+function editThread() {
+    let newContent = prompt("Edit isi thread:");
+    if (newContent) {
+        let index = document.getElementById("viewLogsBtn").getAttribute("data-index");
+        let threads = JSON.parse(localStorage.getItem("threads"));
+        let thread = threads[index];
+
+        thread.logs.push({ time: new Date().toLocaleString(), oldContent: thread.content });
+        thread.content = newContent;
+
+        localStorage.setItem("threads", JSON.stringify(threads));
+        closeModal();
+        loadThreads();
+    }
 }
 
-// Menampilkan Threads Saat Halaman Dibuka
-displayThreads();
+function viewLogs() {
+    let index = document.getElementById("viewLogsBtn").getAttribute("data-index");
+    let logs = JSON.parse(localStorage.getItem("threads"))[index].logs;
+    let logsList = document.getElementById("logsList");
+    logsList.innerHTML = logs.map(log => `<li>${log.time}: ${log.oldContent}</li>`).join("");
+    document.getElementById("logsModal").style.display = "block";
+}
+
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+function closeLogsModal() {
+    document.getElementById("logsModal").style.display = "none";
+                             }
+            
