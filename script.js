@@ -1,104 +1,202 @@
-const adminUser = "admin";
-const adminPass = "admin123";
-let currentUser = "";
+document.addEventListener("DOMContentLoaded", function() {
+    const postForm = document.getElementById('postForm');
+    const postTitle = document.getElementById('postTitle');
+    const postContent = document.getElementById('postContent');
+    const postTags = document.getElementById('postTags');
+    const postsContainer = document.getElementById('postsContainer');
+    const searchInput = document.getElementById('searchInput');
+    const loginLink = document.getElementById('loginLink');
+    const registerLink = document.getElementById('registerLink');
+    const logoutLink = document.getElementById('logoutLink');
+    const profileLink = document.getElementById('profileLink');
+    const loginModal = document.getElementById('loginModal');
+    const registerModal = document.getElementById('registerModal');
+    const closeLogin = document.getElementById('closeLogin');
+    const closeRegister = document.getElementById('closeRegister');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
 
-function toggleSidebar() {
-    document.querySelector('.sidebar').classList.toggle('active');
-}
+    let currentUser = null;
 
-function login() {
-    let username = document.getElementById("username").value;
-    let password = document.getElementById("password").value;
-
-    if (username && password) {
-        localStorage.setItem("currentUser", username);
-        currentUser = username;
-
-        if (username === adminUser && password === adminPass) {
-            localStorage.setItem("isAdmin", true);
-        } else {
-            localStorage.removeItem("isAdmin");
-        }
-
-        document.getElementById("loginContainer").style.display = "none";
-        document.getElementById("forumContainer").style.display = "block";
-        loadThreads();
-    } else {
-        alert("Masukkan username dan password!");
-    }
-}
-
-function logout() {
-    localStorage.removeItem("currentUser");
-    localStorage.removeItem("isAdmin");
-    location.reload();
-}
-
-function addThread() {
-    let title = document.getElementById("threadTitle").value;
-    let content = document.getElementById("threadContent").value;
-
-    if (title && content) {
-        let threads = JSON.parse(localStorage.getItem("threads")) || [];
-        threads.push({ title, content, author: currentUser, logs: [] });
-        localStorage.setItem("threads", JSON.stringify(threads));
-        loadThreads();
-    }
-}
-
-function loadThreads() {
-    let threads = JSON.parse(localStorage.getItem("threads")) || [];
-    let threadList = document.getElementById("threadList");
-    threadList.innerHTML = "";
-
-    threads.forEach((thread, index) => {
-        let threadDiv = document.createElement("div");
-        threadDiv.classList.add("thread");
-        threadDiv.innerHTML = `<b>${thread.title}</b> <br> <i>by ${thread.author}</i>`;
-        threadDiv.onclick = function() {
-            openModal(thread.title, thread.content, index, thread.author);
-        };
-        threadList.appendChild(threadDiv);
+    loginLink.addEventListener('click', () => {
+        loginModal.style.display = 'block';
     });
-}
 
-function openModal(title, content, index, author) {
-    document.getElementById("modalTitle").innerText = title;
-    document.getElementById("modalContent").innerText = content;
-    document.getElementById("modal").style.display = "block";
+    registerLink.addEventListener('click', () => {
+        registerModal.style.display = 'block';
+    });
 
-    document.getElementById("viewLogsBtn").setAttribute("data-index", index);
-}
+    closeLogin.addEventListener('click', () => {
+        loginModal.style.display = 'none';
+    });
 
-function editThread() {
-    let newContent = prompt("Edit isi thread:");
-    if (newContent) {
-        let index = document.getElementById("viewLogsBtn").getAttribute("data-index");
-        let threads = JSON.parse(localStorage.getItem("threads"));
-        let thread = threads[index];
+    closeRegister.addEventListener('click', () => {
+        registerModal.style.display = 'none';
+    });
 
-        thread.logs.push({ time: new Date().toLocaleString(), oldContent: thread.content });
-        thread.content = newContent;
+    window.addEventListener('click', (event) => {
+        if (event.target == loginModal) {
+            loginModal.style.display = 'none';
+        }
+        if (event.target == registerModal) {
+            registerModal.style.display = 'none';
+        }
+    });
 
-        localStorage.setItem("threads", JSON.stringify(threads));
-        closeModal();
-        loadThreads();
+    registerForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const username = document.getElementById('registerUsername').value;
+        const password = document.getElementById('registerPassword').value;
+        registerUser(username, password);
+        registerModal.style.display = 'none';
+    });
+
+    loginForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        loginUser(username, password);
+        loginModal.style.display = 'none';
+    });
+
+    logoutLink.addEventListener('click', () => {
+        logoutUser();
+    });
+
+    postForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        if (currentUser) {
+            addPost(postTitle.value, postContent.value, postTags.value);
+            postTitle.value = '';
+            postContent.value = '';
+            postTags.value = '';
+        } else {
+            alert('You must be logged in to create a post.');
+        }
+    });
+
+    searchInput.addEventListener('input', () => {
+        displayPosts();
+    });
+
+    function registerUser(username, password) {
+        const users = getUsers();
+        if (users.find(user => user.username === username)) {
+            alert('Username already exists.');
+            return;
+        }
+        users.push({ username, password });
+        localStorage.setItem('users', JSON.stringify(users));
+        alert('Registration successful.');
     }
-}
 
-function viewLogs() {
-    let index = document.getElementById("viewLogsBtn").getAttribute("data-index");
-    let logs = JSON.parse(localStorage.getItem("threads"))[index].logs;
-    let logsList = document.getElementById("logsList");
-    logsList.innerHTML = logs.map(log => `<li>${log.time}: ${log.oldContent}</li>`).join("");
-    document.getElementById("logsModal").style.display = "block";
-}
+    function loginUser(username, password) {
+        const users = getUsers();
+        const user = users.find(user => user.username === username && user.password === password);
+        if (user) {
+            currentUser = user;
+            alert('Login successful.');
+            loginLink.style.display = 'none';
+            registerLink.style.display = 'none';
+            logoutLink.style.display = 'block';
+            profileLink.style.display = 'block';
+        } else {
+            alert('Invalid username or password.');
+        }
+    }
 
-function closeModal() {
-    document.getElementById("modal").style.display = "none";
-}
+    function logoutUser() {
+        currentUser = null;
+        alert('Logout successful.');
+        loginLink.style.display = 'block';
+        registerLink.style.display = 'block';
+        logoutLink.style.display = 'none';
+        profileLink.style.display = 'none';
+    }
 
-function closeLogsModal() {
-    document.getElementById("logsModal").style.display = "none";
-                             }
-            
+    function getUsers() {
+        return JSON.parse(localStorage.getItem('users')) || [];
+    }
+
+    function addPost(title, content, tags) {
+        const posts = getPosts();
+        const newPost = {
+            title,
+            content,
+            tags: tags.split(',').map(tag => tag.trim()),
+            date: new Date().toLocaleString(),
+            comments: [],
+            likes: 0
+        };
+        posts.push(newPost);
+        localStorage.setItem('posts', JSON.stringify(posts));
+        displayPosts();
+    }
+
+    function getPosts() {
+        return JSON.parse(localStorage.getItem('posts')) || [];
+    }
+
+    function displayPosts() {
+        const posts = getPosts();
+        const searchTerm = searchInput.value.toLowerCase();
+        postsContainer.innerHTML = '';
+        posts.filter(post => post.title.toLowerCase().includes(searchTerm) || post.content.toLowerCase().includes(searchTerm) || post.tags.some(tag => tag.toLowerCase().includes(searchTerm))).forEach((post, index) => {
+            const postElement = document.createElement('div');
+            postElement.classList.add('post');
+            postElement.innerHTML = `
+                <h3>${post.title}</h3>
+                <p>${post.content}</p>
+                <small>${post.date}</small>
+                <p>Tags: ${post.tags.join(', ')}</p>
+                <button onclick="likePost(${index})">Like (${post.likes})</button>
+                <div class="comments">
+                    <h4>Comments</h4>
+                    <div class="commentsContainer"></div>
+                    <form class="commentForm">
+                        <input type="text" class="commentInput" placeholder="Write a comment" required>
+                        <button type="submit">Comment</button>
+                    </form>
+                </div>
+            `;
+            const commentsContainer = postElement.querySelector('.commentsContainer');
+            const commentForm = postElement.querySelector('.commentForm');
+            const commentInput = postElement.querySelector('.commentInput');
+
+            commentForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                addComment(index, commentInput.value);
+                commentInput.value = '';
+            });
+
+            displayComments(commentsContainer, post.comments);
+            postsContainer.appendChild(postElement);
+        });
+    }
+
+    function addComment(postIndex, comment) {
+        const posts = getPosts();
+        posts[postIndex].comments.push({ content: comment, date: new Date().toLocaleString() });
+        localStorage.setItem('posts', JSON.stringify(posts));
+        displayPosts();
+    }
+
+    function displayComments(container, comments) {
+        container.innerHTML = '';
+        comments.forEach(comment => {
+            const commentElement = document.createElement('div');
+            commentElement.classList.add('comment');
+            commentElement.innerHTML = `<p>${comment.content}</p><small>${comment.date}</small>`;
+            container.appendChild(commentElement);
+        });
+    }
+
+    function likePost(index) {
+        const posts = getPosts();
+        posts[index].likes++;
+        localStorage.setItem('posts', JSON.stringify(posts));
+        displayPosts();
+    }
+
+    displayPosts();
+});
